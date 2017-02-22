@@ -1,23 +1,45 @@
 version: '2'
 
 services:
+
   nginx:
     build: ./nginx
     links:
-      - service1:service1
+      - notes:notes
+      - search:search
     ports:
       - "80:80"
-  service1:
-    image: node:7.5.0
-    volumes:
-      - ./service1:/app
-    links:
-      - redis
-    ports:
-      - "8080:8080"
-    working_dir: "/app"
-    command: npm start
+
   redis:
     image: redis
     ports:
-        - "6379"
+      - "6379"
+
+  mongo:
+    build: ./mongo
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/var/lib/mongodb
+
+  notes:
+    image: node:7.5.0
+    volumes:
+      - ./notes:/app
+    links:
+      - redis
+      - mongo
+    working_dir: "/app"
+    command: npm start
+
+  search:
+    image: node:7.5.0
+    volumes:
+      - ./search:/app
+    links:
+      - redis
+      - mongo
+    working_dir: "/app"
+    command: npm start
